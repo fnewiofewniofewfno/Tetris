@@ -274,6 +274,43 @@ class Board{
         }        
         return false;
     }
+
+    public void rotateRight(int x, int y){
+        int current_puzzle = puzzleQueue[puzzleCount];
+        if(!canRotate(x, y)){
+            return;
+        }
+        for(int i = 0; i < Puzzle.shape[current_puzzle].length; i++){
+            for(int j = 0; j < Puzzle.shape[current_puzzle][0].length; j++){
+                grid[i + y][j + x] = 0;
+            }
+        }
+        int[][] tab;
+        tab = rotateMatrix(Puzzle.shape[current_puzzle]);
+        
+        for(int i = 0; i < tab.length; i++){
+            for(int j = 0; j < tab[0].length; j++){
+                if(grid[rot_y + i][rot_x + j] == 1){
+                    for(int k = 0; k < Puzzle.shape[current_puzzle].length; k++){
+                        for(int l = 0; l < Puzzle.shape[current_puzzle][0].length; l++){
+                            grid[k + y][l + x] = 1;
+                        }
+                    }
+                    return;
+                }
+            }
+        }
+        for(int i = 0; i < tab.length; i++){
+            for(int j = 0; j < tab[0].length; j++){
+                grid[rot_y + i][rot_x + j] = 1;
+                }
+            }
+            App.x = rot_x * App.TILE_SIZE;
+            App.y = rot_y * App.TILE_SIZE;
+        }
+
+    
+
     // public void rotateRight(int x, int y){
     //     int current_puzzle = puzzleQueue[puzzleCount];
         
