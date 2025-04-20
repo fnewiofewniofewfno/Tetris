@@ -8,6 +8,8 @@ class Board{
     static Color[][] tile_color = new Color[App.ROWS][App.COLUMNS];
     public static int puzzleCount = 0;
     public static int rotateState = 0;
+    public static int rot_x;
+    public static int rot_y;
 
     public static int[] puzzleQueue = new int[7];
 
@@ -155,35 +157,23 @@ class Board{
         return false;
 
     }
-    //sprawdza czy po obróceniu klocek nie wyjdzie poza tablice
-    // public boolean canRotate(int x, int y){
-    //     int current_puzzle = puzzleQueue[puzzleCount];
-    //     if(current_puzzle == 2){
-    //         return true;
-    //     }
-    //     if(current_puzzle == 3 || current_puzzle == 4){
-    //         if(rotateState % 4 == 0){
-    //             if(x + 3 > App.COLUMNS){
-    //                 return true;
-    //             }
-    //         }
-    //     }
-
-    // }
 
     public boolean canRotate(int x, int y){
         int current_puzzle = puzzleQueue[puzzleCount];
         switch (current_puzzle) {
             
             case 2:
+                rot_x = x;
+                rot_y = y;
                 return true;
-            break;
 
             case 3:
             case 4:
                 if(rotateState % 4 == 0){
                         if(x + 3 > App.COLUMNS){
                             rotateState++;
+                            rot_x = x;
+                            rot_y = y;
                             return true;
                         }else{
                             return false;
@@ -193,6 +183,8 @@ class Board{
                     if(y + 3 > App.ROWS){
                         x++;
                         rotateState++;
+                        rot_x = x;
+                        rot_y = y;
                         return true;
                     }
                 }
@@ -201,6 +193,8 @@ class Board{
                         x--;
                         y++;
                         rotateState++;
+                        rot_x = x;
+                        rot_y = y;
                         return true;
                     }
                 }
@@ -208,15 +202,20 @@ class Board{
                     if(y - 1 < 0){
                         y--;
                         rotateState++;
+                        rot_x = x;
+                        rot_y = y;
                         return true;
                     }
                 }
+                break;
                 case 6:
                 case 5:
                 case 1:
                 if(rotateState % 4 == 3){
                     if(x + 3 > App.COLUMNS){
                         rotateState++;
+                        rot_x = x;
+                        rot_y = y;
                         return true;
                     }else{
                         return false;
@@ -226,6 +225,8 @@ class Board{
                 if(y + 3 > App.ROWS){
                     x++;
                     rotateState++;
+                    rot_x = x;
+                    rot_y = y;
                     return true;
                 }
             }
@@ -245,119 +246,112 @@ class Board{
                 }
             }
             break;
-
-    }
-    public void rotateRight(int x, int y){
-        int current_puzzle = puzzleQueue[puzzleCount];
-        
-        int[][] tab;
-
-        tab = rotateMatrix(Puzzle.shape[current_puzzle]);
-
-        if(current_puzzle == 3 || current_puzzle == 4){
-            //stan 0 stopni dla klocka 3 i 4
-            if(rotateState % 4 == 0){
-                if(x + 3 > App.COLUMNS){
-                    return;
-                }
-
-                for(int i = 0; i < tab.length; i++){
-                    for(int j = 0; j < tab[0].length; j++){
-                        if(grid[i][j] != 1){
-                            grid[x + i][y + j] = tab[i][j];
-                        }else{
-                            return;
-                        }
-                    }
-                }
-                rotateState++;
+            case 0:
+        if(rotateState % 2 == 0){
+            if(x - 1 < 0 || x + 3 > App.COLUMNS){
+                return false;
             }
-            //stan 90 stopni dla klocka 3 i 4
-            if(rotateState % 4 == 1){
-                if(y + 3 > App.ROWS){
-                    return;
-                }
-
-                for(int i = 0; i < tab.length; i++){
-                    for(int j = 0; j < tab[0].length; j++){
-                        if(grid[i][j] != 1){
-                            grid[x + i][y + j] = tab[i][j];
-                        }else{
-                            return;
-                        }
-                    }
-                }
-                App.x += App.TILE_SIZE;
-                rotateState++;
-            }
-            if(rotateState % 4 == 2){
-                if(x + 3 > App.COLUMNS){
-                    return;
-                }
-
-                for(int i = 0; i < tab.length; i++){
-                    for(int j = 0; j < tab[0].length; j++){
-                        if(grid[i][j] != 1){
-                            grid[x + i][y + j] = tab[i][j];
-                        }else{
-                            return;
-                        }
-                    }
-                }
-                App.y += App.TILE_SIZE;
-                App.x -= App.TILE_SIZE;
-                rotateState++;
-            }
-            if(rotateState % 4 == 3){
-                if(y - 1 > App.ROWS){
-                    return;
-                }
-
-                for(int i = 0; i < tab.length; i++){
-                    for(int j = 0; j < tab[0].length; j++){
-                        if(grid[i][j] != 1){
-                            grid[x + i][y + j] = tab[i][j];
-                        }else{
-                            return;
-                        }
-                    }
-                }
-                rotateState++;
-                App.y -= App.TILE_SIZE;
-            }
+            y++;
+            x--;
+            rotateState++;
+            rot_x = x;
+            rot_y = y;
+            return true;
         }
-        
+        if(rotateState % 2 == 1){
+            if(y + 3 > App.ROWS || y - 1 < 0){
+                return false;
+            }
+            x++;
+            y--;
+            rotateState++;
+            rot_x = x;
+            rot_y = y;
+            return true;
+        }
+        break;
+
+        }        
+        return false;
     }
-
-    
-    
-    //obracanie klocków
-
     // public void rotateRight(int x, int y){
     //     int current_puzzle = puzzleQueue[puzzleCount];
-    //     if(current_puzzle == 0){
+        
+    //     int[][] tab;
+
+    //     tab = rotateMatrix(Puzzle.shape[current_puzzle]);
+
+    //     if(current_puzzle == 3 || current_puzzle == 4){
+    //         //stan 0 stopni dla klocka 3 i 4
     //         if(rotateState % 4 == 0){
-    //             if(x >= 1 || x <= App.COLUMNS - 3){
-    //                 if(grid[y + 1][x - 1] == 1 || grid[y + 1][x] == 1 || grid[y + 1][x + 1] == 1 || grid[y + 1][x + 2] == 1){
-    //                     return;
-    //                 }
-    //                 App.x -= App.TILE_SIZE;
-    //                 App.y += App.TILE_SIZE;
-    //                 int[][] tab = {{1,1,1,1}};
-    //                 Puzzle.shape[current_puzzle] = tab;
-    //             }
-    //             else{
+    //             if(x + 3 > App.COLUMNS){
     //                 return;
     //             }
-    //         }
-    //         if(rotateState % 4 == 1){
-    //             if(y <= ){
 
+    //             for(int i = 0; i < tab.length; i++){
+    //                 for(int j = 0; j < tab[0].length; j++){
+    //                     if(grid[i][j] != 1){
+    //                         grid[x + i][y + j] = tab[i][j];
+    //                     }else{
+    //                         return;
+    //                     }
+    //                 }
     //             }
+    //             rotateState++;
     //         }
-    //     }
-    //     if(current_puzzle == 2){
-    //         return;
+    //         //stan 90 stopni dla klocka 3 i 4
+    //         if(rotateState % 4 == 1){
+    //             if(y + 3 > App.ROWS){
+    //                 return;
+    //             }
+
+    //             for(int i = 0; i < tab.length; i++){
+    //                 for(int j = 0; j < tab[0].length; j++){
+    //                     if(grid[i][j] != 1){
+    //                         grid[x + i][y + j] = tab[i][j];
+    //                     }else{
+    //                         return;
+    //                     }
+    //                 }
+    //             }
+    //             App.x += App.TILE_SIZE;
+    //             rotateState++;
+    //         }
+    //         if(rotateState % 4 == 2){
+    //             if(x + 3 > App.COLUMNS){
+    //                 return;
+    //             }
+
+    //             for(int i = 0; i < tab.length; i++){
+    //                 for(int j = 0; j < tab[0].length; j++){
+    //                     if(grid[i][j] != 1){
+    //                         grid[x + i][y + j] = tab[i][j];
+    //                     }else{
+    //                         return;
+    //                     }
+    //                 }
+    //             }
+    //             App.y += App.TILE_SIZE;
+    //             App.x -= App.TILE_SIZE;
+    //             rotateState++;
+    //         }
+    //         if(rotateState % 4 == 3){
+    //             if(y - 1 > App.ROWS){
+    //                 return;
+    //             }
+
+    //             for(int i = 0; i < tab.length; i++){
+    //                 for(int j = 0; j < tab[0].length; j++){
+    //                     if(grid[i][j] != 1){
+    //                         grid[x + i][y + j] = tab[i][j];
+    //                     }else{
+    //                         return;
+    //                     }
+    //                 }
+    //             }
+    //             rotateState++;
+    //             App.y -= App.TILE_SIZE;
+    //         }
     //     }
         
     // }
@@ -389,21 +383,10 @@ class Board{
         puzzleQueue = Random7bag();
     }
 
-    public static void print2DArray(int[][] array) {
-        for (int i = 0; i < array.length; i++) {
-            for (int j = 0; j < array[i].length; j++) {
-                // drukuj wartość i spację
-                System.out.print(array[i][j] + " ");
-            }
-            // po każdej linii wiersza przejdź do nowej linii
-            System.out.println();
-        }
-    }
+
 
     public static void main(String[] args) {
-        int[][] tab = new int[4][1];
-        tab = Puzzle.shape[0];
-        print2DArray(tab);
+
     
     }
     }
