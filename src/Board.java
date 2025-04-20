@@ -155,9 +155,98 @@ class Board{
         return false;
 
     }
+    //sprawdza czy po obróceniu klocek nie wyjdzie poza tablice
+    // public boolean canRotate(int x, int y){
+    //     int current_puzzle = puzzleQueue[puzzleCount];
+    //     if(current_puzzle == 2){
+    //         return true;
+    //     }
+    //     if(current_puzzle == 3 || current_puzzle == 4){
+    //         if(rotateState % 4 == 0){
+    //             if(x + 3 > App.COLUMNS){
+    //                 return true;
+    //             }
+    //         }
+    //     }
 
-    
+    // }
 
+    public boolean canRotate(int x, int y){
+        int current_puzzle = puzzleQueue[puzzleCount];
+        switch (current_puzzle) {
+            
+            case 2:
+                return true;
+            break;
+
+            case 3:
+            case 4:
+                if(rotateState % 4 == 0){
+                        if(x + 3 > App.COLUMNS){
+                            rotateState++;
+                            return true;
+                        }else{
+                            return false;
+                        }
+                }
+                if(rotateState % 4 == 1){
+                    if(y + 3 > App.ROWS){
+                        x++;
+                        rotateState++;
+                        return true;
+                    }
+                }
+                if(rotateState % 4 == 2){
+                    if(x - 1 < 0){
+                        x--;
+                        y++;
+                        rotateState++;
+                        return true;
+                    }
+                }
+                if(rotateState % 4 == 3){
+                    if(y - 1 < 0){
+                        y--;
+                        rotateState++;
+                        return true;
+                    }
+                }
+                case 6:
+                case 5:
+                case 1:
+                if(rotateState % 4 == 3){
+                    if(x + 3 > App.COLUMNS){
+                        rotateState++;
+                        return true;
+                    }else{
+                        return false;
+                    }
+            }
+            if(rotateState % 4 == 2){
+                if(y + 3 > App.ROWS){
+                    x++;
+                    rotateState++;
+                    return true;
+                }
+            }
+            if(rotateState % 4 == 1){
+                if(x - 1 < 0){
+                    x--;
+                    y++;
+                    rotateState++;
+                    return true;
+                }
+            }
+            if(rotateState % 4 == 0){
+                if(y - 1 < 0){
+                    y--;
+                    rotateState++;
+                    return true;
+                }
+            }
+            break;
+
+    }
     public void rotateRight(int x, int y){
         int current_puzzle = puzzleQueue[puzzleCount];
         
