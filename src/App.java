@@ -40,10 +40,10 @@ class App extends JPanel implements Runnable, KeyListener{
         else{
             x = 4 * TILE_SIZE;
             y = 0;
-            board.rotateState = 0;
+            Puzzle.rotateState = 0;
             if(Board.puzzleCount == 6){
                 Board.puzzleCount = 0;
-                Board.puzzleQueue = board.Random7bag();
+                Board.puzzleQueue = Board.Random7bag();
             }else{
                 Board.puzzleCount++;
             }
@@ -147,5 +147,6 @@ class App extends JPanel implements Runnable, KeyListener{
         window.pack();
         panel.requestFocus();
         //System.out.println(Puzzle.shape[1][0].length);
+
     }
 }
