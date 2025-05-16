@@ -7,12 +7,10 @@ class Board{
     static int[][] grid = new int[App.ROWS][App.COLUMNS];
     static Color[][] tile_color = new Color[App.ROWS][App.COLUMNS];
     public static int puzzleCount = 0;
-    public static int rot_x;
-    public static int rot_y;
 
     public static int[] puzzleQueue = new int[7];
 
-    public record RotationResult(boolean succes, int x, int y) {
+    public record RotationResult(boolean success, int x, int y, int[][] new_shape,int current_puzzle) {
     }
 
     public String print_board(){
@@ -45,7 +43,7 @@ class Board{
         for(int i = 0; i < App.ROWS; i++){
             boolean remove = true;
             for(int j = 0; j < App.COLUMNS - 1; j++){
-                if(grid[i][j] != grid[i][j + 1] || tile_color[i][j] != tile_color[i][j + 1] || grid[i][j] == 0){
+                if(grid[i][j] != grid[i][j + 1] || grid[i][j] == 0){
                     remove = false;
                 }
             }
@@ -111,13 +109,12 @@ class Board{
         }
     }
     
-    public boolean try_spawn_puzzle(int current_x, int current_y, int[][] temp_grid){
+    public boolean try_spawn_puzzle(int current_x, int current_y, int[][] temp_grid, int[][] new_tab){
         final int x = current_x;
-        int puzzle = puzzleQueue[puzzleCount];
-        for(int i = 0; i < Puzzle.shape[puzzle].length; i++){
+        for(int i = 0; i < new_tab.length; i++){
             current_x = x;
-            for(int j = 0; j < Puzzle.shape[puzzle][i].length; j++){
-                if(Puzzle.shape[puzzle][i][j] == 1){
+            for(int j = 0; j < new_tab[i].length; j++){
+                if(new_tab[i][j] == 1){
                         if(temp_grid[current_y][current_x] == 1)
                         {
                             return false;
@@ -153,7 +150,6 @@ class Board{
 
     public boolean canMoveRight(int x, int y){
         int current_puzzle = puzzleQueue[puzzleCount];
-        //sprawdzić czy if ponizej jest okej
         if(x + Puzzle.shape[current_puzzle][0].length >= App.COLUMNS){
             return false;
         }
@@ -199,379 +195,268 @@ class Board{
     public RotationResult canRotate(int x, int y){
         int current_puzzle = puzzleQueue[puzzleCount];
         int[][] temp_grid = new int[App.ROWS][App.COLUMNS];
-        temp_grid = grid;
+        for(int i = 0; i < App.ROWS; i++){
+            for(int j = 0; j < App.COLUMNS; j++){
+                temp_grid[i][j] = grid[i][j];
+            }
+        }
         int[][] temp_tab = new int[Puzzle.shape[current_puzzle].length][Puzzle.shape[current_puzzle][0].length];
         temp_tab = Puzzle.shape[current_puzzle];
         switch (current_puzzle) {
             case 2:
-                return new RotationResult(true, x, y);
+                return new RotationResult(true, x, y, Puzzle.shape[current_puzzle],current_puzzle);
             case 3:
                 if(Puzzle.rotateState % 4 == 0){
                         if(x - 1 < 0){
-                            return new RotationResult(false, x, y);
+                            return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);
                         }
                         temp_grid = clear_rot_puzzle(x, y, temp_grid);
                         x-=1;
                         y+=1;
                         temp_tab = rotateMatrix(Puzzle.shape[current_puzzle]);
-                        if(try_spawn_puzzle(x,y,temp_grid)){
-                            return new RotationResult(true, x, y);
+                        if(try_spawn_puzzle(x,y,temp_grid,temp_tab)){
+                            return new RotationResult(true, x, y,temp_tab,current_puzzle);
                         }
-                        else{return new RotationResult(false, x, y);}
+                        else{
+                            return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);}
 
                 }
                 if(Puzzle.rotateState % 4 == 1){
                     if(y - 1 < 0){
-                        return new RotationResult(false, x, y);
+                        return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);
                     }
                     temp_grid = clear_rot_puzzle(x, y, temp_grid);
                     y-=1;
                     temp_tab = rotateMatrix(Puzzle.shape[current_puzzle]);
-                    if(try_spawn_puzzle(x,y,temp_grid)){
-                        return new RotationResult(true, x, y);
+                    if(try_spawn_puzzle(x,y,temp_grid,temp_tab)){
+                        return new RotationResult(true, x, y,temp_tab,current_puzzle);
                     }
-                    else{return new RotationResult(false, x, y);}
+                    else{
+                        return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);}
                 }
                 if(Puzzle.rotateState % 4 == 2){
                     if(x + 2 >= App.COLUMNS){
-                        return new RotationResult(false, x, y);
+                        return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);
                     }
                     temp_grid = clear_rot_puzzle(x, y, temp_grid);
                     temp_tab = rotateMatrix(Puzzle.shape[current_puzzle]);
-                    if(try_spawn_puzzle(x,y,temp_grid)){
-                        return new RotationResult(true, x, y);
+                    if(try_spawn_puzzle(x,y,temp_grid,temp_tab)){
+                        return new RotationResult(true, x, y,temp_tab,current_puzzle);
                     }
-                    else{return new RotationResult(false, x, y);}
+                    else{
+                        return new RotationResult(false, x, y, Puzzle.shape[current_puzzle],current_puzzle);}
                 }
                 if(Puzzle.rotateState % 4 == 3){
                     if(y + 2 >= App.ROWS){
-                        return new RotationResult(false, x, y);
+                        return new RotationResult(false, x, y, Puzzle.shape[current_puzzle],current_puzzle);
                     }
                     temp_grid = clear_rot_puzzle(x, y, temp_grid);
                     x+=1;
                     temp_tab = rotateMatrix(Puzzle.shape[current_puzzle]);
-                    if(try_spawn_puzzle(x,y,temp_grid)){
-                        return new RotationResult(true, x, y);
+                    if(try_spawn_puzzle(x,y,temp_grid,temp_tab)){
+                        return new RotationResult(true, x, y,temp_tab ,current_puzzle);
                     }
-                    else{return new RotationResult(false, x, y);}
+                    else{
+
+                        return new RotationResult(false, x, y, Puzzle.shape[current_puzzle],current_puzzle);}
                 }
             break;
             case 4:
                 if(Puzzle.rotateState % 4 == 0){
                         if(x + 2 >= App.COLUMNS){
-                            return new RotationResult(false, x, y);
+                            return new RotationResult(false, x, y, Puzzle.shape[current_puzzle],current_puzzle);
                         }
                         temp_grid = clear_rot_puzzle(x, y, temp_grid);
                         temp_tab = rotateMatrix(Puzzle.shape[current_puzzle]);
-                        if(try_spawn_puzzle(x,y,temp_grid)){
-                            return new RotationResult(true, x, y);
+                        if(try_spawn_puzzle(x,y,temp_grid,temp_tab)){
+                            return new RotationResult(true, x, y,temp_tab,current_puzzle);
                         }
-                        else{return new RotationResult(false, x, y);}
+                        else{
+                            return new RotationResult(false, x, y ,Puzzle.shape[current_puzzle],current_puzzle);}
 
                 }
                 if(Puzzle.rotateState % 4 == 1){
                     if(y + 2 >= App.ROWS){
-                        return new RotationResult(false, x, y);
+                        return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);
                     }
                     temp_grid = clear_rot_puzzle(x, y, temp_grid);
+                    x++;
                     temp_tab = rotateMatrix(Puzzle.shape[current_puzzle]);
-                    if(try_spawn_puzzle(x,y,temp_grid)){
-                        return new RotationResult(true, x, y);
+                    if(try_spawn_puzzle(x,y,temp_grid,temp_tab)){
+                        return new RotationResult(true, x, y,temp_tab,current_puzzle);
                     }
-                    else{return new RotationResult(false, x, y);}
+                    else{
+                        return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);}
                 }
                 if(Puzzle.rotateState % 4 == 2){
                     if(x - 1 < 0){
-                        return new RotationResult(false, x, y);
+                        return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);
                     }
                     temp_grid = clear_rot_puzzle(x, y, temp_grid);
                     y+=1;
                     x-=1;
                     temp_tab = rotateMatrix(Puzzle.shape[current_puzzle]);
-                    if(try_spawn_puzzle(x,y,temp_grid)){
-                        return new RotationResult(true, x, y);
+                    if(try_spawn_puzzle(x,y,temp_grid,temp_tab)){
+                        return new RotationResult(true, x, y,temp_tab,current_puzzle);
                     }
-                    else{return new RotationResult(false, x, y);}
+                    else{
+                        return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);}
                 }
                 if(Puzzle.rotateState % 4 == 3){
                     if(y - 1 < 0){
-                        return new RotationResult(false, x, y);
+                        return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);
                     }
                     temp_grid = clear_rot_puzzle(x, y, temp_grid);
                     y-=1;
                     temp_tab = rotateMatrix(Puzzle.shape[current_puzzle]);
-                    if(try_spawn_puzzle(x,y,temp_grid)){
-                        return new RotationResult(true, x, y);
+                    if(try_spawn_puzzle(x,y,temp_grid,temp_tab)){
+                        return new RotationResult(true, x, y,temp_tab,current_puzzle);
                     }
-                    else{return new RotationResult(false, x, y);}
+                    else{
+                        return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);}
                 }
             break;
             case 6:
                 if(Puzzle.rotateState % 2 == 0){
-                    if(y - 1 < 0)}
-                        return new RotationResult(false, x, y);
-                    {
+                    if(y - 1 < 0){
+                        return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);
+                    }
                     temp_grid = clear_rot_puzzle(x, y, temp_grid);
                     y-=1;
                     x+=1;
                     temp_tab = rotateMatrix(Puzzle.shape[current_puzzle]);
-                    if(try_spawn_puzzle(x,y,temp_grid)){
-                        return new RotationResult(true, x, y);
+                    if(try_spawn_puzzle(x,y,temp_grid,temp_tab)){
+                        return new RotationResult(true, x, y,temp_tab,current_puzzle);
                     }
-                    else{return new RotationResult(false, x, y);}
+                    else{return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);}
                 }
-                if(Puzzle.rotateState % 2 == 1){
-                    if(x - 1 < 0)}
-                        return new RotationResult(false, x, y);
-                    {
+                    if(Puzzle.rotateState % 2 == 1){
+                        if(x - 1 < 0){
+                            return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);
+                        }     
                     temp_grid = clear_rot_puzzle(x, y, temp_grid);
                     y+=1;
                     x-=1;
                     temp_tab = rotateMatrix(Puzzle.shape[current_puzzle]);
-                    if(try_spawn_puzzle(x,y,temp_grid)){
-                        return new RotationResult(true, x, y);
+                    if(try_spawn_puzzle(x,y,temp_grid,temp_tab)){
+                        return new RotationResult(true, x, y,temp_tab,current_puzzle);
                     }
-                    else{return new RotationResult(false, x, y);}
+                    else{return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);}
                 }
                 
                 break;
                 case 5:
                 if(Puzzle.rotateState % 2 == 0){
-                    if(y - 1 < 0)}
-                        return new RotationResult(false, x, y);
-                    {
+                    if(y - 1 < 0){
+                        return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);
+                    }
                     temp_grid = clear_rot_puzzle(x, y, temp_grid);
                     y-=1;
                     x+=1;
                     temp_tab = rotateMatrix(Puzzle.shape[current_puzzle]);
-                    if(try_spawn_puzzle(x,y,temp_grid)){
-                        return true;
+                    if(try_spawn_puzzle(x,y,temp_grid,temp_tab)){
+                        return new RotationResult(true, x, y,temp_tab,current_puzzle);
                     }
-                    else{return new RotationResult(false, x, y);}
+                    else{return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);}
                 }
                 if(Puzzle.rotateState % 2 == 1){
-                    if(x - 1 < 0)}
-                        return new RotationResult(false, x, y);
-                    {
+                    if(x - 1 < 0){
+                        return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);
+                    }
                     temp_grid = clear_rot_puzzle(x, y, temp_grid);
                     y+=1;
                     x-=1;
                     temp_tab = rotateMatrix(Puzzle.shape[current_puzzle]);
-                    if(try_spawn_puzzle(x,y,temp_grid)){
-                        return new RotationResult(true, x, y);
+                    if(try_spawn_puzzle(x,y,temp_grid,temp_tab)){
+                        return new RotationResult(true, x, y,temp_tab,current_puzzle);
                     }
-                    else{return new RotationResult(false, x, y);}
+                    else{return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);}
                 }
                 break;
                 case 1:
                     if(Puzzle.rotateState % 4 == 0){
                         if(x + 2 >= App.COLUMNS){
-                            return new RotationResult(false, x, y);
+                            return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);
                         }
                         temp_grid = clear_rot_puzzle(x, y, temp_grid);
                         y-=1;
                         temp_tab = rotateMatrix(Puzzle.shape[current_puzzle]);
-                        if(try_spawn_puzzle(x,y,temp_grid)){
-                            return new RotationResult(true, x, y);
+                        if(try_spawn_puzzle(x,y,temp_grid,temp_tab)){
+                            return new RotationResult(true, x, y,temp_tab,current_puzzle);
                         }
-                        else{return new RotationResult(false, x, y);}
+                        else{return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);}
 
                     }
                     if(Puzzle.rotateState % 4 == 1){
                         if(x + 2 >= App.COLUMNS){
-                            return new RotationResult(false, x, y);
+                            return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);
                         }
                         temp_grid = clear_rot_puzzle(x, y, temp_grid);
                         temp_tab = rotateMatrix(Puzzle.shape[current_puzzle]);
-                        if(try_spawn_puzzle(x,y,temp_grid)){
-                            return new RotationResult(true, x, y);
+                        if(try_spawn_puzzle(x,y,temp_grid,temp_tab)){
+                            return new RotationResult(true, x, y,temp_tab,current_puzzle);
                         }
-                        else{return new RotationResult(false, x, y);}   
+                        else{return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);}   
                     }
                     if(Puzzle.rotateState % 4 == 2){
                         if(y + 2 >= App.ROWS){
-                            return new RotationResult(false, x, y);
+                            return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);
                         }
                         temp_grid = clear_rot_puzzle(x, y, temp_grid);
                         x+=1;
                         temp_tab = rotateMatrix(Puzzle.shape[current_puzzle]);
-                        if(try_spawn_puzzle(x,y,temp_grid)){
-                            return new RotationResult(true, x, y);
+                        if(try_spawn_puzzle(x,y,temp_grid,temp_tab)){
+                            return new RotationResult(true, x, y,temp_tab,current_puzzle);
                         }
-                        else{return new RotationResult(false, x, y);}
+                        else{return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);}
                     }
                     if(Puzzle.rotateState % 4 == 3){
                         if(x - 1 <= 0){
-                            return new RotationResult(false, x, y);
+                            return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);
                         }
                         temp_grid = clear_rot_puzzle(x, y, temp_grid);
                         x-=1;
                         y+=1;
                         temp_tab = rotateMatrix(Puzzle.shape[current_puzzle]);
-                        if(try_spawn_puzzle(x,y,temp_grid)){
-                            return new RotationResult(true, x, y);
+                        if(try_spawn_puzzle(x,y,temp_grid,temp_tab)){
+                            return new RotationResult(true, x, y,temp_tab,current_puzzle);
                         }
-                        else{return new RotationResult(false, x, y);}
+                        else{return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);}
                     }
                     break;
             case 0:
                 if(Puzzle.rotateState % 2 == 0){
-                    if(x - 2 < 0 || x + 3 > App.COLUMNS){
-                        return false;
+                    if(x - 2 < 0 || x + 1 >= App.COLUMNS){
+                        return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);
                     }
-                    y++;
-                    x--;
-                    Puzzle.rotateState++;
-                    rot_x = x;
-                    rot_y = y;
-                    return true;
+                    y+=2;
+                    x-=2;
+                    temp_tab = rotateMatrix(Puzzle.shape[current_puzzle]);
+                    if(try_spawn_puzzle(x,y,temp_grid,temp_tab)){
+                        return new RotationResult(true, x, y,temp_tab,current_puzzle);
+                    }
+                    else{return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);}
                 }
                 if(Puzzle.rotateState % 2 == 1){
-                    if(y + 3 > App.ROWS || y - 1 < 0){
-                        return false;
+                    if(y - 2 < 0 || y + 1 >= App.ROWS){
+                        return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);
                     }
-                    x++;
-                    y--;
-                    Puzzle.rotateState++;
-                    rot_x = x;
-                    rot_y = y;
-                    return true;
+                    x+=2;
+                    y-=2;
+                    temp_tab = rotateMatrix(Puzzle.shape[current_puzzle]);
+                    if(try_spawn_puzzle(x,y,temp_grid,temp_tab)){
+                        return new RotationResult(true, x, y,temp_tab,current_puzzle);
+                    }
+                    else{return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);}
                 }
         break;
 
         }        
-        return false;
+        return new RotationResult(false, x, y,Puzzle.shape[current_puzzle],current_puzzle);
     }
-<<<<<<< HEAD
-    
-    public void rotateRight(int x, int y){
-        int current_puzzle = puzzleQueue[puzzleCount];
-        if(canRotate(x, y)){
-            
-        }
-    }
-=======
 
-    public void rotateRight(int x, int y){
-        int current_puzzle = puzzleQueue[puzzleCount];
-        if(!canRotate(x, y)){
-            return;
-        }
-        for(int i = 0; i < Puzzle.shape[current_puzzle].length; i++){
-            for(int j = 0; j < Puzzle.shape[current_puzzle][0].length; j++){
-                grid[i + y][j + x] = 0;
-            }
-        }
-        int[][] tab;
-        tab = rotateMatrix(Puzzle.shape[current_puzzle]);
-        
-        for(int i = 0; i < tab.length; i++){
-            for(int j = 0; j < tab[0].length; j++){
-                if(grid[rot_y + i][rot_x + j] == 1){
-                    for(int k = 0; k < Puzzle.shape[current_puzzle].length; k++){
-                        for(int l = 0; l < Puzzle.shape[current_puzzle][0].length; l++){
-                            grid[k + y][l + x] = 1;
-                        }
-                    }
-                    return;
-                }
-            }
-        }
-        for(int i = 0; i < tab.length; i++){
-            for(int j = 0; j < tab[0].length; j++){
-                grid[rot_y + i][rot_x + j] = 1;
-                }
-            }
-            App.x = rot_x * App.TILE_SIZE;
-            App.y = rot_y * App.TILE_SIZE;
-        }
 
-    
->>>>>>> e9ecbc844adc46aa20b4b1f0e05d420ec48b9c18
-
-    // public void rotateRight(int x, int y){
-    //     int current_puzzle = puzzleQueue[puzzleCount];
-        
-    //     int[][] tab;
-
-    //     tab = rotateMatrix(Puzzle.shape[current_puzzle]);
-
-    //     if(current_puzzle == 3 || current_puzzle == 4){
-    //         //stan 0 stopni dla klocka 3 i 4
-    //         if(rotateState % 4 == 0){
-    //             if(x + 3 > App.COLUMNS){
-    //                 return;
-    //             }
-
-    //             for(int i = 0; i < tab.length; i++){
-    //                 for(int j = 0; j < tab[0].length; j++){
-    //                     if(grid[i][j] != 1){
-    //                         grid[x + i][y + j] = tab[i][j];
-    //                     }else{
-    //                         return;
-    //                     }
-    //                 }
-    //             }
-    //             rotateState++;
-    //         }
-    //         //stan 90 stopni dla klocka 3 i 4
-    //         if(rotateState % 4 == 1){
-    //             if(y + 3 > App.ROWS){
-    //                 return;
-    //             }
-
-    //             for(int i = 0; i < tab.length; i++){
-    //                 for(int j = 0; j < tab[0].length; j++){
-    //                     if(grid[i][j] != 1){
-    //                         grid[x + i][y + j] = tab[i][j];
-    //                     }else{
-    //                         return;
-    //                     }
-    //                 }
-    //             }
-    //             App.x += App.TILE_SIZE;
-    //             rotateState++;
-    //         }
-    //         if(rotateState % 4 == 2){
-    //             if(x + 3 > App.COLUMNS){
-    //                 return;
-    //             }
-
-    //             for(int i = 0; i < tab.length; i++){
-    //                 for(int j = 0; j < tab[0].length; j++){
-    //                     if(grid[i][j] != 1){
-    //                         grid[x + i][y + j] = tab[i][j];
-    //                     }else{
-    //                         return;
-    //                     }
-    //                 }
-    //             }
-    //             App.y += App.TILE_SIZE;
-    //             App.x -= App.TILE_SIZE;
-    //             rotateState++;
-    //         }
-    //         if(rotateState % 4 == 3){
-    //             if(y - 1 > App.ROWS){
-    //                 return;
-    //             }
-
-    //             for(int i = 0; i < tab.length; i++){
-    //                 for(int j = 0; j < tab[0].length; j++){
-    //                     if(grid[i][j] != 1){
-    //                         grid[x + i][y + j] = tab[i][j];
-    //                     }else{
-    //                         return;
-    //                     }
-    //                 }
-    //             }
-    //             rotateState++;
-    //             App.y -= App.TILE_SIZE;
-    //         }
-    //     }
-        
-    // }
-
-    //losowanie klockow
+    //Random tetromino selection
     public static int[] Random7bag(){
         Random rand = new Random();
         int[] array = new int[7];
