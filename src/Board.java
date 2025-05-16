@@ -126,7 +126,24 @@ class Board{
         }
         return true;
     }
-
+    public void resetMatrix(int tetermino,int count){
+            switch(tetermino){
+                case 0:
+                case 5:
+                case 6:
+                if(count%2==1){
+                    Puzzle.shape[tetermino] = rotateMatrix(Puzzle.shape[tetermino]);
+                }
+                break;
+                case 1:
+                case 3:
+                case 4:
+                for(int i = 0; i <  (4 - count%4);i++){
+                    Puzzle.shape[tetermino] = rotateMatrix(Puzzle.shape[tetermino]);
+                }
+                break;
+            }
+    }
     public boolean canMoveLeft(int x, int y){
         int current_puzzle = puzzleQueue[puzzleCount];
         if(x == 0){
