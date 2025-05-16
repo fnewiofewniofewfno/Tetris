@@ -48,6 +48,7 @@ class App extends JPanel implements Runnable, KeyListener{
             board.removeLine();
             x = 4 * TILE_SIZE;
             y = 0;
+            board.resetMatrix(Board.puzzleQueue[Board.puzzleCount],Puzzle.rotateState);
             Puzzle.rotateState = 0;
             if(Board.puzzleCount == 6){
                 Board.puzzleCount = 0;
