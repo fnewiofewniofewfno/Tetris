@@ -4,6 +4,8 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
+import src.Board.RotationResult;
+
 import java.util.*;
 
 class App extends JPanel implements Runnable, KeyListener{
@@ -16,10 +18,13 @@ class App extends JPanel implements Runnable, KeyListener{
 
     static int x = 4 * TILE_SIZE;
     static int y = 0;
+    
+    int fallSpeed = 600;
 
     boolean running = false;
     boolean right = false;
     boolean left = false;
+    boolean down = false;
     boolean rotate_right = false;
     
     Thread gameThread;
@@ -33,11 +38,14 @@ class App extends JPanel implements Runnable, KeyListener{
     }
 
     public void update(){
+
         if(!board.is_landed(x/TILE_SIZE, y/TILE_SIZE)){
+
             board.clear_puzzle(x/TILE_SIZE, y/TILE_SIZE);
             y += TILE_SIZE;
         }
         else{
+            board.removeLine();
             x = 4 * TILE_SIZE;
             y = 0;
             Puzzle.rotateState = 0;
@@ -49,13 +57,32 @@ class App extends JPanel implements Runnable, KeyListener{
             }
         }
 
+        if(down == true && board.is_landed(x/TILE_SIZE, y/TILE_SIZE) == false){
+            y+=TILE_SIZE;
+        }
+
+        if (rotate_right) {
+            RotationResult result = board.canRotate(x / TILE_SIZE, y / TILE_SIZE);
+            if (result.success()) {
+                int new_x = result.x() * TILE_SIZE;
+                int new_y = result.y() * TILE_SIZE;
+                int current_puzzle = result.current_puzzle();
+                Puzzle.shape[current_puzzle] = result.new_shape();
+                x = new_x;
+                y = new_y;
+                Puzzle.rotateState++;
+                rotate_right = false;
+            }
+        }
         if(left && board.canMoveLeft(x/TILE_SIZE, y/TILE_SIZE)){
             board.clear_puzzle(x/TILE_SIZE, y/TILE_SIZE);
             x -= TILE_SIZE;
+            left = false;
         }
         if(right && board.canMoveRight(x/TILE_SIZE, y/TILE_SIZE)){
             board.clear_puzzle(x/TILE_SIZE, y/TILE_SIZE);
             x += TILE_SIZE;
+            right = false;
         }
         board.clear_puzzle(x/TILE_SIZE, y/TILE_SIZE);
         board.spawn_puzzle(x/TILE_SIZE, y/TILE_SIZE);
@@ -63,10 +90,10 @@ class App extends JPanel implements Runnable, KeyListener{
 
     App(){
         setBackground(Color.BLACK);
-        setPreferredSize(new Dimension(WIDTH,HEIGHT));
         setFocusable(true);
-        requestFocusInWindow();
         addKeyListener(this);
+        setPreferredSize(new Dimension(WIDTH,HEIGHT));
+        requestFocusInWindow();
         start_thread();
     }
 
@@ -74,7 +101,7 @@ class App extends JPanel implements Runnable, KeyListener{
     public void paintComponent(Graphics g){
         super.paintComponent(g);
 
-        //rysowanie siatki
+        //grid drawing
         for(int i = 0; i < HEIGHT; i+=TILE_SIZE){
             for(int j = 0; j < WIDTH; j+=TILE_SIZE){
                 g.drawRect(j, i, TILE_SIZE, TILE_SIZE);
@@ -82,7 +109,7 @@ class App extends JPanel implements Runnable, KeyListener{
         }
 
 
-        //malowanie planszy na podstawie Board.grid
+        //tetermino drawing
         for(int i = 0; i < ROWS;i++){
             for(int j = 0; j < COLUMNS; j++){
                 if(Board.grid[i][j] == 1){
@@ -100,7 +127,7 @@ class App extends JPanel implements Runnable, KeyListener{
             update();
             repaint();
             try{
-                Thread.sleep(100);
+                Thread.sleep(fallSpeed);
             }catch(Exception e){
                 System.err.println("Katastrofa");
             }
@@ -108,28 +135,26 @@ class App extends JPanel implements Runnable, KeyListener{
     }
     @Override
     public void keyPressed(KeyEvent e){
-        int direction = e.getKeyCode();
-        if(direction == KeyEvent.VK_RIGHT){
+        int keyCode  = e.getKeyCode();
+        if(keyCode  == KeyEvent.VK_RIGHT){
             right = true;
         }
-        if(direction == KeyEvent.VK_LEFT){
+        if(keyCode  == KeyEvent.VK_LEFT){
             left = true;
         }
-        if(direction == KeyEvent.VK_UP){
+        if(keyCode  == KeyEvent.VK_DOWN){
+            fallSpeed = 100;
+        }
+        if(keyCode  == KeyEvent.VK_UP){
             rotate_right = true;
         }
+
     }
     @Override
     public void keyReleased(KeyEvent e){
-        int direction = e.getKeyCode();
-        if(direction == KeyEvent.VK_RIGHT){
-            right = false;
-        }
-        if(direction == KeyEvent.VK_LEFT){
-            left = false;
-        }
-        if(direction == KeyEvent.VK_UP){
-            rotate_right = false;
+        int keyCode = e.getKeyCode();
+        if(keyCode  == KeyEvent.VK_DOWN){
+            fallSpeed = 600;
         }
     }
     @Override
@@ -137,6 +162,7 @@ class App extends JPanel implements Runnable, KeyListener{
 
     }
     public static void main(String[] args) {
+        
         JFrame window = new JFrame();
         window.setVisible(true);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -146,7 +172,6 @@ class App extends JPanel implements Runnable, KeyListener{
         window.add(panel);
         window.pack();
         panel.requestFocus();
-        //System.out.println(Puzzle.shape[1][0].length);
-
+        panel.requestFocusInWindow();
     }
 }
