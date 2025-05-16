@@ -126,6 +126,7 @@ class Board{
         }
         return true;
     }
+
     public void resetMatrix(int tetermino,int count){
             switch(tetermino){
                 case 0:
