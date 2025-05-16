@@ -26,6 +26,7 @@ class App extends JPanel implements Runnable, KeyListener{
     boolean left = false;
     boolean down = false;
     boolean rotate_right = false;
+    boolean gameOver = false;
     
     Thread gameThread;
 
@@ -45,9 +46,17 @@ class App extends JPanel implements Runnable, KeyListener{
             y += TILE_SIZE;
         }
         else{
+            if(gameOver()){
+                gameOver = true;
+                System.out.println("Koniec gry");
+                //board.clear_board();
+                running = false;
+
+            }else{
+            
             board.removeLine();
             x = 4 * TILE_SIZE;
-            y = 0;
+            y = 0;}
             board.resetMatrix(Board.puzzleQueue[Board.puzzleCount],Puzzle.rotateState);
             Puzzle.rotateState = 0;
             if(Board.puzzleCount == 6){
@@ -56,6 +65,7 @@ class App extends JPanel implements Runnable, KeyListener{
             }else{
                 Board.puzzleCount++;
             }
+        
         }
 
         if(down == true && board.is_landed(x/TILE_SIZE, y/TILE_SIZE) == false){
@@ -98,6 +108,18 @@ class App extends JPanel implements Runnable, KeyListener{
         start_thread();
     }
 
+    public boolean gameOver(){
+        for(int i = 0; i < Puzzle.shape[Board.puzzleQueue[Board.puzzleCount]].length; i++){
+            for( int j =0;j<Puzzle.shape[Board.puzzleQueue[Board.puzzleCount]][0].length;j++){
+                if(board.grid[0 + i][4 + j] == 1){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
     @Override
     public void paintComponent(Graphics g){
         super.paintComponent(g);
@@ -111,13 +133,15 @@ class App extends JPanel implements Runnable, KeyListener{
 
 
         //tetermino drawing
-        for(int i = 0; i < ROWS;i++){
-            for(int j = 0; j < COLUMNS; j++){
-                if(Board.grid[i][j] == 1){
-                    g.setColor(Board.tile_color[i][j]);
-                    g.fillRect(j*TILE_SIZE, i*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+       if(!gameOver){
+             for(int i = 0; i < ROWS;i++){
+                 for(int j = 0; j < COLUMNS; j++){
+                   if(Board.grid[i][j] == 1){
+                      g.setColor(Board.tile_color[i][j]);
+                      g.fillRect(j*TILE_SIZE, i*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                   }
                 }
-            }
+             }
         }
 
     }
