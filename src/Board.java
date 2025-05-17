@@ -13,6 +13,14 @@ class Board{
     public record RotationResult(boolean success, int x, int y, int[][] new_shape,int current_puzzle) {
     }
 
+    public static void clear_grid(){
+        for(int i = 0; i < App.ROWS; i++){
+            for(int j = 0; j < App.COLUMNS; j++){
+                grid[i][j]=0;
+            }
+        }
+    }
+
     public String print_board(){
         String gowno = "";
         for(int i = 0; i < App.ROWS; i++){
