@@ -10,6 +10,9 @@ import java.util.*;
 
 class App extends JPanel implements Runnable, KeyListener{
 
+    private JLabel gameOverLabel;
+    private JButton restart;
+
     static final int COLUMNS = 10;
     static final int ROWS = 20;
     static final int TILE_SIZE = 30;
@@ -48,9 +51,10 @@ class App extends JPanel implements Runnable, KeyListener{
         else{
             if(gameOver()){
                 gameOver = true;
-                System.out.println("Koniec gry");
-                //board.clear_board();
-                running = false;
+                gameOverLabel.setVisible(true);
+                restart.setVisible(true);
+                x = 4 * TILE_SIZE;
+                y = 0;
 
             }else{
             
@@ -106,6 +110,37 @@ class App extends JPanel implements Runnable, KeyListener{
         setPreferredSize(new Dimension(WIDTH,HEIGHT));
         requestFocusInWindow();
         start_thread();
+        
+        gameOverLabel = new JLabel("GAME OVER");
+        gameOverLabel.setFont(new Font("Arial", Font.BOLD, 48));
+        gameOverLabel.setForeground(Color.magenta);
+        int labelWidth = 300, labelHeight = 60;
+        int x = (COLUMNS * TILE_SIZE - labelWidth) / 2;
+        int y = (HEIGHT - labelHeight) / 2;
+        gameOverLabel.setBounds(x, y, labelWidth, labelHeight);
+        gameOverLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        gameOverLabel.setVisible(false);  // na razie niewidoczny
+        add(gameOverLabel);
+
+        restart = new JButton("RESTART");
+
+        restart.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Board.clear_grid();
+            gameOver = false;
+            gameOverLabel.setVisible(false);
+            restart.setVisible(false);
+        }
+        });
+
+        restart.setFont(new Font("Arial", Font.BOLD, 30));
+        restart.setBounds(x, 2*y, labelWidth, labelHeight);
+        restart.setBackground(Color.magenta);
+        restart.setForeground(Color.WHITE);
+        restart.setVisible(false);
+        add(restart);
+
     }
 
     public boolean gameOver(){
@@ -125,9 +160,11 @@ class App extends JPanel implements Runnable, KeyListener{
         super.paintComponent(g);
 
         //grid drawing
-        for(int i = 0; i < HEIGHT; i+=TILE_SIZE){
-            for(int j = 0; j < WIDTH; j+=TILE_SIZE){
-                g.drawRect(j, i, TILE_SIZE, TILE_SIZE);
+        if(!gameOver){
+            for(int i = 0; i < HEIGHT; i+=TILE_SIZE){
+                for(int j = 0; j < WIDTH; j+=TILE_SIZE){
+                    g.drawRect(j, i, TILE_SIZE, TILE_SIZE);
+                }
             }
         }
 
@@ -143,6 +180,7 @@ class App extends JPanel implements Runnable, KeyListener{
                 }
              }
         }
+
 
     }
 
@@ -194,6 +232,7 @@ class App extends JPanel implements Runnable, KeyListener{
         window.setResizable(false);
 
         App panel = new App();
+        // panel.setLayout(new GridLayout(2,1));
         window.add(panel);
         window.pack();
         panel.requestFocus();
